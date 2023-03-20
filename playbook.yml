@@ -1,0 +1,30 @@
+---
+- name: Install Visual Studio 2022 Build Tools
+  hosts: all
+
+  tasks:
+   - name: vs2022 | Check if Visual Studio 2022 Build Tools are installed
+     win_stat: path='C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Auxiliary/Build/vcvarsall.bat'
+     register: vs2022_installed
+
+   - name: Ensure Chocolatey installed
+     win_chocolatey:
+       name: chocolatey
+       source: https://community.chocolatey.org/install.ps1
+
+
+   - name: Creates directory
+     win_file:
+        path: C:\ansible_psl
+        state: directory
+     when: not vs2022_installed.stat.exists
+
+   - name: Copy file to Windows VM
+     win_copy:
+        src: "/home/arakelyan/test/files/test.ps1"
+        dest: "C:\\ansible_psl"
+        remote_src: no
+     when: not vs2022_installed.stat.exists
+
+   - name: Run psl
+     ansible.windows.win_shell: C:\\ansible_psl\\test.ps1
